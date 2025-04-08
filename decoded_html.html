@@ -1,0 +1,932 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ETERNAL- Advanced Menu</title>
+    <style>
+        :root {
+            --primary: #00ffff;
+            --secondary: #ff00ff;
+            --bg-dark: #0a0a1a;
+            --bg-light: #14142b;
+            --text: #ffffff;
+            --success: #00ff00;
+            --danger: #ff0000;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Arial', sans-serif;
+            user-select: none;
+            -webkit-tap-highlight-color: transparent;
+        }
+        
+        body {
+            background: var(--bg-dark);
+            color: var(--text);
+            overflow: hidden;
+            height: 100vh;
+            background-image: 
+                radial-gradient(circle at 25% 25%, rgba(0, 255, 255, 0.1) 0%, transparent 50%),
+                radial-gradient(circle at 75% 75%, rgba(255, 0, 255, 0.1) 0%, transparent 50%);
+        }
+        
+        /* Floating button styles */
+        .floating-btn {
+            position: fixed;
+            width: 60px;
+            height: 60px;
+            background: url('https://i.postimg.cc/XrQLZGh9/icon.png') center/cover no-repeat;
+            border-radius: 50%;
+            cursor: move;
+            z-index: 1000;
+            box-shadow: 0 0 15px var(--primary);
+            border: 2px solid var(--primary);
+            transition: transform 0.2s;
+        }
+        
+        .floating-btn:active {
+            transform: scale(0.95);
+        }
+        
+        .container {
+            width: 95%;
+            max-width: 800px;
+            height: 90vh;
+            background: rgba(10, 10, 26, 0.9);
+            border-radius: 20px;
+            border: 1px solid var(--primary);
+            box-shadow: 
+                0 0 15px var(--primary),
+                0 0 30px rgba(0, 255, 255, 0.3);
+            overflow: hidden;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            backdrop-filter: blur(5px);
+            z-index: 999;
+            display: none;
+        }
+        
+        .container.visible {
+            display: block;
+        }
+        
+        .close-btn {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            width: 30px;
+            height: 30px;
+            background: rgba(255, 0, 0, 0.3);
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            z-index: 1001;
+            border: 1px solid var(--danger);
+        }
+        
+        .close-btn::before, .close-btn::after {
+            content: '';
+            position: absolute;
+            width: 60%;
+            height: 2px;
+            background: var(--danger);
+        }
+        
+        .close-btn::before {
+            transform: rotate(45deg);
+        }
+        
+        .close-btn::after {
+            transform: rotate(-45deg);
+        }
+        
+        .header {
+            padding: 15px;
+            text-align: center;
+            background: linear-gradient(90deg, transparent, rgba(0, 255, 255, 0.2), transparent);
+            border-bottom: 1px solid var(--primary);
+            position: relative;
+        }
+        
+        .header h1 {
+            font-size: 24px;
+            background: linear-gradient(90deg, var(--primary), var(--secondary));
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            text-shadow: 0 0 10px rgba(0, 255, 255, 0.5);
+            letter-spacing: 2px;
+        }
+        
+        .tabs {
+            display: flex;
+            background: var(--bg-light);
+            border-bottom: 1px solid rgba(0, 255, 255, 0.2);
+        }
+        
+        .tab {
+            flex: 1;
+            padding: 12px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            border-bottom: 2px solid transparent;
+            font-size: 14px;
+        }
+        
+        .tab.active {
+            border-bottom: 2px solid var(--primary);
+            color: var(--primary);
+            background: rgba(0, 255, 255, 0.1);
+        }
+        
+        .tab-content {
+            display: none;
+            padding: 15px;
+            height: calc(100% - 120px);
+            overflow-y: auto;
+        }
+        
+        .tab-content.active {
+            display: block;
+        }
+        
+        .feature-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            gap: 15px;
+            margin-top: 15px;
+        }
+        
+        .feature-card {
+            background: var(--bg-light);
+            border-radius: 10px;
+            padding: 15px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            border: 1px solid rgba(0, 255, 255, 0.3);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .feature-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(0, 255, 255, 0.3);
+            border-color: var(--primary);
+        }
+        
+        .feature-card.active {
+            background: rgba(0, 255, 255, 0.1);
+            border-color: var(--primary);
+        }
+        
+        .feature-card.active::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: var(--primary);
+            animation: pulse 2s infinite;
+        }
+        
+        .feature-icon {
+            font-size: 24px;
+            margin-bottom: 10px;
+            color: var(--primary);
+        }
+        
+        .feature-name {
+            font-size: 14px;
+            margin-bottom: 5px;
+        }
+        
+        .feature-desc {
+            font-size: 12px;
+            color: rgba(255, 255, 255, 0.7);
+        }
+        
+        .status-bar {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            padding: 10px;
+            background: rgba(0, 0, 0, 0.5);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 12px;
+            border-top: 1px solid rgba(0, 255, 255, 0.2);
+        }
+        
+        .status-item {
+            display: flex;
+            align-items: center;
+        }
+        
+        .status-indicator {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            margin-right: 5px;
+            background: var(--success);
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.5; }
+            100% { opacity: 1; }
+        }
+        
+        .particles {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+        }
+        
+        /* Scrollbar styling */
+        ::-webkit-scrollbar {
+            width: 5px;
+        }
+        
+        ::-webkit-scrollbar-track {
+            background: rgba(0, 255, 255, 0.1);
+            border-radius: 10px;
+        }
+        
+        ::-webkit-scrollbar-thumb {
+            background: var(--primary);
+            border-radius: 10px;
+        }
+        
+        /* Responsive adjustments */
+        @media (max-width: 600px) {
+            .feature-list {
+                grid-template-columns: 1fr;
+            }
+            
+            .container {
+                width: 100%;
+                height: 100vh;
+                border-radius: 0;
+            }
+            
+            .floating-btn {
+                width: 50px;
+                height: 50px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Floating button to show/hide menu -->
+    <div class="floating-btn" id="floatingBtn"></div>
+    
+    <!-- Main menu container -->
+    <div class="container" id="mainMenu">
+        <div class="close-btn" id="closeBtn"></div>
+        <div class="particles" id="particles-js"></div>
+        
+        <div class="header">
+            <h1>MINHCHAU MOD V5</h1>
+        </div>
+        
+        <div class="tabs">
+            <div class="tab active" onclick="openTab('tab-aim')">AIM</div>
+            <div class="tab" onclick="openTab('tab-sniper')">SNIPER</div>
+            <div class="tab" onclick="openTab('tab-other')">OTHER</div>
+        </div>
+        
+        <!-- AIM Tab -->
+        <div id="tab-aim" class="tab-content active">
+            <div class="feature-list">
+                <div class="feature-card" onclick="AimFor()">
+                    <div class="feature-icon"></div>
+                    <div class="feature-name">AIM LOCK</div>
+                    <div class="feature-desc">Lock onto targets automatically</div>
+                </div>
+                
+                <div class="feature-card" onclick="s100s()">
+                    <div class="feature-icon"></div>
+                    <div class="feature-name">AIM 180</div>
+                    <div class="feature-desc">Instant 180 degree turn</div>
+                </div>
+                
+                <div class="feature-card" onclick="s105s()">
+                    <div class="feature-icon"></div>
+                    <div class="feature-name">AIM SCOPE</div>
+                    <div class="feature-desc">Improved scope aiming</div>
+                </div>
+                
+                <div class="feature-card" onclick="s04()">
+                    <div class="feature-icon"></div>
+                    <div class="feature-name">LOOK SCOPE</div>
+                    <div class="feature-desc">Enhanced scope vision</div>
+                </div>
+                
+                <div class="feature-card" onclick="Nhetam()">
+                    <div class="feature-icon"></div>
+                    <div class="feature-name">AIM DRAG</div>
+                    <div class="feature-desc">HEAD IN NECK</div>
+                </div>
+                
+                <div class="feature-card" onclick="norecoil()">
+                    <div class="feature-icon">⚡</div>
+                    <div class="feature-name">NO RECOIL</div>
+                    <div class="feature-desc">Eliminate weapon recoil</div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- SNIPER Tab -->
+        <div id="tab-sniper" class="tab-content">
+            <div class="feature-list">
+                <div class="feature-card" onclick="so90()">
+                    <div class="feature-icon">🔫</div>
+                    <div class="feature-name">AWM SWITCH</div>
+                    <div class="feature-desc">Quick AWM switching</div>
+                </div>
+                
+                <div class="feature-card" onclick="so91()">
+                    <div class="feature-icon">🎯</div>
+                    <div class="feature-name">SNIPER SCOPE</div>
+                    <div class="feature-desc">Enhanced sniper scope</div>
+                </div>
+                
+                <div class="feature-card" onclick="so92()">
+                    <div class="feature-icon"></div>
+                    <div class="feature-name">AIM AWM</div>
+                    <div class="feature-desc">AWM AIM</div>
+                </div>
+                
+                <div class="feature-card" onclick="so93()">
+                    <div class="feature-icon"></div>
+                    <div class="feature-name">ARM SWITCH</div>
+                    <div class="feature-desc">Fast arm switching</div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- OTHER Tab -->
+        <div id="tab-other" class="tab-content">
+            <div class="feature-list">
+                <div class="feature-card" onclick="so02()">
+                    <div class="feature-icon"></div>
+                    <div class="feature-name">ANTENNA V1</div>
+                    <div class="feature-desc">ESP v1</div>
+                </div>
+                
+                <div class="feature-card" onclick="so04()">
+                    <div class="feature-icon"></div>
+                    <div class="feature-name">ANTENNA V2</div>
+                    <div class="feature-desc">ESP v2</div>
+                </div>
+                
+                <div class="feature-card" onclick="so06()">
+                    <div class="feature-icon"></div>
+                    <div class="feature-name">ANTENNA V3</div>
+                    <div class="feature-desc">ESP v3</div>
+                </div>
+                
+                <div class="feature-card" onclick="buffdame()">
+                    <div class="feature-icon"></div>
+                    <div class="feature-name">BUFF DAMAGE</div>
+                    <div class="feature-desc">Increase weapon damage</div>
+                </div>
+                
+                <div class="feature-card" id="speed-btn" onclick="toggleSpeed()">
+                    <div class="feature-icon"></div>
+                    <div class="feature-name">SPEED X9</div>
+                    <div class="feature-desc">Double movement speed</div>
+                </div>
+                
+                <!-- Nueva opción MAGIC -->
+                <div class="feature-card" onclick="magic()">
+                    <div class="feature-icon"></div>
+                    <div class="feature-name">MAGIC BULLET</div>
+                    <div class="feature-desc">MAGIC</div>
+                </div>
+                
+                <!-- Nueva opción AVATAR -->
+                <div class="feature-card" onclick="avatar()">
+                    <div class="feature-icon"></div>
+                    <div class="feature-name">AVATAR MOD</div>
+                    <div class="feature-desc">WITHOUT HEAD, ACTIVATE IN LOBBY</div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="status-bar">
+            <div class="status-item">
+                <div class="status-indicator"></div>
+                <span>ACTIVE</span>
+            </div>
+            <div>v5.0.1</div>
+            <div>@minhchauioscheatREAL </div>
+        </div>
+    </div>
+
+    <script>
+        // Variables for drag and drop
+        let pos1 = 0, pos2 = 0, pos3 = 0, pos4 = 0;
+        let isDragging = false;
+        
+        // Get the floating button and main menu
+        const floatingBtn = document.getElementById('floatingBtn');
+        const mainMenu = document.getElementById('mainMenu');
+        const closeBtn = document.getElementById('closeBtn');
+        
+        // Make the floating button draggable
+        floatingBtn.onmousedown = dragMouseDown;
+        floatingBtn.ontouchstart = dragMouseDown;
+        
+        function dragMouseDown(e) {
+            e = e || window.event;
+            e.preventDefault();
+            
+            // Check if it's a touch event
+            if (e.type === 'touchstart') {
+                pos3 = e.touches[0].clientX;
+                pos4 = e.touches[0].clientY;
+            } else {
+                pos3 = e.clientX;
+                pos4 = e.clientY;
+            }
+            
+            document.onmouseup = closeDragElement;
+            document.ontouchend = closeDragElement;
+            document.onmousemove = elementDrag;
+            document.ontouchmove = elementDrag;
+        }
+        
+        function elementDrag(e) {
+            e = e || window.event;
+            e.preventDefault();
+            
+            // Calculate the new position
+            let newPos1, newPos2;
+            
+            if (e.type === 'touchmove') {
+                newPos1 = pos3 - e.touches[0].clientX;
+                newPos2 = pos4 - e.touches[0].clientY;
+                pos3 = e.touches[0].clientX;
+                pos4 = e.touches[0].clientY;
+            } else {
+                newPos1 = pos3 - e.clientX;
+                newPos2 = pos4 - e.clientY;
+                pos3 = e.clientX;
+                pos4 = e.clientY;
+            }
+            
+            // Set the element's new position
+            floatingBtn.style.top = (floatingBtn.offsetTop - newPos2) + "px";
+            floatingBtn.style.left = (floatingBtn.offsetLeft - newPos1) + "px";
+            
+            isDragging = true;
+        }
+        
+        function closeDragElement() {
+            // Stop moving when mouse button is released
+            document.onmouseup = null;
+            document.onmousemove = null;
+            document.ontouchend = null;
+            document.ontouchmove = null;
+            
+            // If it wasn't a drag (just a click), toggle the menu
+            if (!isDragging) {
+                toggleMenu();
+            }
+            
+            isDragging = false;
+        }
+        
+        // Toggle menu visibility
+        function toggleMenu() {
+            mainMenu.classList.toggle('visible');
+        }
+        
+        // Close button event
+        closeBtn.addEventListener('click', toggleMenu);
+        
+        // Tab switching function
+        function openTab(tabId) {
+            // Hide all tab content
+            const tabs = document.getElementsByClassName('tab-content');
+            for (let i = 0; i < tabs.length; i++) {
+                tabs[i].classList.remove('active');
+            }
+            
+            // Remove active class from all tabs
+            const tabButtons = document.getElementsByClassName('tab');
+            for (let i = 0; i < tabButtons.length; i++) {
+                tabButtons[i].classList.remove('active');
+            }
+            
+            // Show the selected tab content
+            document.getElementById(tabId).classList.add('active');
+            
+            // Add active class to the clicked tab
+            event.currentTarget.classList.add('active');
+        }
+        
+        // Feature activation animation
+        const featureCards = document.querySelectorAll('.feature-card');
+        featureCards.forEach(card => {
+            card.addEventListener('click', function() {
+                this.classList.add('active');
+                setTimeout(() => {
+                    this.classList.remove('active');
+                }, 1000);
+            });
+        });
+        
+        // Speed toggle state
+        let speedActive = false;
+        
+        // Speed toggle function using your original codes
+        function toggleSpeed() {
+            const speedBtn = document.getElementById('speed-btn');
+            
+            if (!speedActive) {
+                // Activate speed
+                fs1(); // First search
+                fs2(); // Then edit to speed value
+                speedActive = true;
+                speedBtn.classList.add('active');
+                showNotification('SPEED X9 ACTIVATED');
+            } else {
+                // Deactivate speed
+                fs1(); // First search
+                fs3(); // Then edit back to normal value
+                speedActive = false;
+                speedBtn.classList.remove('active');
+                showNotification('SPEED X9 DEACTIVATED');
+            }
+        }
+        
+        // Your original speed functions
+        function fs1() {
+            h5gg.clearResults();
+            h5gg.searchNumber('4397530849764387586', 'I64', '0x100000000', '0x200000000');
+        }
+
+        function fs3() {
+            h5gg.editAll('4397530849764387586', 'I64');
+        }
+
+        function fs2() {
+            h5gg.editAll('4366458311853765201', 'I64');
+        }
+        
+        // Magic Bullet function
+        function magic() {
+            h5gg.clearResults();
+            h5gg.searchNumber('4333543704410193920', 'I64', '0x100000000', '0x160000000');
+            h5gg.searchNearby('0.01', 'F32', '0x8');
+            h5gg.searchNearby('0.0219~0.02975', 'F32', '0x32')
+            h5gg.searchNearby('0.1035~0.1070', 'F32', '0x4');
+            h5gg.searchNearby('2.802597e-45', 'F32', '0x4');
+            h5gg.searchNumber('0.1035~0.1070', 'F32', '0x100000000', '0x160000000');
+            h5gg.editAll('1.875', "F32");
+            showNotification('MAGIC BULLET activated');
+        }
+        
+        // Avatar Mod function (Headshot ngực)
+        function avatar() {
+            h5gg.clearResults();
+            h5gg.searchNumber('96688289', 'I32', '0x100000000', '0x160000000');
+            h5gg.editAll('-1051086991', 'I32');
+            showNotification('AVATAR MOD activated');
+        }
+        
+        // Rest of your original functions...
+        function AimFor() {
+            modifyValue(1077936128, -20000, 'A04'); 
+            modifyValue(1069547520, 1148829696, 'A10');
+            showNotification('AIM LOCK activated');
+        }
+        
+        function s100s() {
+            h5gg.clearResults();
+            h5gg.searchNumber('1057048494','I32','0x100000000', '0x160000000');
+            h5gg.editAll('-2000', 'I32'); 
+            h5gg.clearResults();
+            h5gg.searchNumber('1054951342','I32','0x100000000', '0x160000000');
+            h5gg.editAll('-2000', 'I32'); 
+            h5gg.clearResults();
+            h5gg.searchNumber('1053273620','I32','0x100000000', '0x160000000');
+            h5gg.editAll('-2000', 'I32'); 
+            h5gg.clearResults();
+            showNotification('AIM 180 activated');
+        }
+        
+        function s105s() {
+            h5gg.clearResults();
+            h5gg.searchNumber('0.09','F32','0x0', '0x20000000000');
+            h5gg.editAll('180', 'F32'); 
+            h5gg.clearResults();
+            showNotification('AIM SCOPE activated');
+        }
+        
+        function s04() {
+            h5gg.clearResults();
+            h5gg.searchNumber('4609164001829663539', 'I64', '0x100000000', '0x130000000');
+            h5gg.editAll('4620693218765517619', 'I64');
+            showNotification('LOOK SCOPE activated');
+        }
+        
+        function Nhetam() {
+            modifyValue(3145840, 49, 'I32');
+            showNotification('NHẸ TÂM activated');
+        }
+        
+        function norecoil() {
+            h5gg.clearResults();
+            h5gg.searchNumber('1016018816','I32','0x100000000', '0x200000000');
+            h5gg.editAll('6018816', 'I32'); 
+            h5gg.clearResults();
+            showNotification('NO RECOIL activated');
+        }
+        
+        function so90() {
+            h5gg.clearResults();
+            h5gg.searchNumber('4603687625386098688', 'I64', '0x100000000', '0x160000000');
+            var count = h5gg.getResultsCount();
+            var r = h5gg.getResults(count);
+            var cnt = 0;
+            for (var i = 0; i < count; i++) {
+                var addr1 = r[i].address;
+                var dizhi0 = (Number(addr1) + 36);
+                var dizhi1 = (Number(addr1) + 40);
+                {
+                    h5gg.setValue(dizhi0, 0.01, "F32");
+                    h5gg.setValue(dizhi1, 0.01, "F32");
+                }
+            }
+            showNotification('AWM SWITCH activated');
+        }
+        
+        function so91() {
+            h5gg.clearResults();
+            h5gg.searchNumber('31101603021', 'I64', '0x100000000', '0x160000000');
+            var count = h5gg.getResultsCount();
+            var r = h5gg.getResults(count);
+            var cnt = 0;
+            for(var i=0; i<count; i++) {
+                var addr1 = r[i].address;
+                var dizhi0 = (Number(addr1) + 8);
+                {
+                    h5gg.setValue(dizhi0, 2139095040, "I32");
+                }
+            }
+            showNotification('SNIPER SCOPE activated');
+        }
+        
+        function so92() {
+            h5gg.clearResults();
+            h5gg.searchNumber('4603687625386098688', 'I64', '0x100000000', '0x160000000');
+            var count = h5gg.getResultsCount();
+            var r = h5gg.getResults(count);
+            var cnt = 0;
+            for (var i = 0; i < count; i++) {
+                var addr1 = r[i].address;
+                var dizhi0 = (Number(addr1) + 36);
+                var dizhi1 = (Number(addr1) + 40);
+                var dizhi2 = (Number(addr1) + -308);
+                {
+                    h5gg.setValue(dizhi0, 0.01, "F32");
+                    h5gg.setValue(dizhi1, 0.01, "F32");
+                    h5gg.setValue(dizhi2, 0, "I32");
+                }
+            }
+            showNotification('AIM AWM activated');
+        }
+        
+        function so93() {
+            h5gg.clearResults();
+            h5gg.searchNumber('72340173878198272', 'I64', '0x100000000', '0x130000000');
+            h5gg.editAll('72340172821233664', 'I64');
+            showNotification('ARM SWITCH activated');
+        }
+        
+        function so02() {
+            h5gg.clearResults();
+            h5gg.searchNumber('4575657222469899220', 'I64', '0x100000000', '0x160000000');
+            h5gg.editAll('4848124999925814228', 'I64');
+            h5gg.clearResults();
+            h5gg.searchNumber('4575657222469336965', 'I64', '0x100000000', '0x160000000');
+            h5gg.editAll('4848124999925251973', 'I64');
+            showNotification('ANTENNA V1 activated');
+        }
+        
+        function so04() {
+            h5gg.clearResults();
+            h5gg.searchNumber('4575657224610966592', 'I64', '0x100000000', '0x160000000');
+            h5gg.editAll('4848125002066881600', 'I64');
+            showNotification('ANTENNA V2 activated');
+        }
+        
+        function so06() {
+            h5gg.clearResults();
+            h5gg.searchNumber('4575657222443971598', 'I64', '0x100000000', '0x130000000');
+            h5gg.editAll('4848124999899886606', 'I64');
+            h5gg.clearResults();
+            h5gg.searchNumber('4575657224578539469', 'I64', '0x100000000', '0x130000000');
+            h5gg.editAll('4848125002034454477', 'I64');
+            showNotification('ANTENNA V3 activated');
+        }
+        
+        function buffdame() {
+            h5gg.clearResults();
+            h5gg.searchNumber('5.5','F32','0x100000000', '0x160000000');
+            h5gg.editAll('10000000', 'F32'); 
+            h5gg.clearResults();
+            h5gg.searchNumber('0.75','F32','0x100000000', '0x160000000');
+            h5gg.editAll('10000000', 'F32'); 
+            h5gg.clearResults();
+            showNotification('BUFF DAMAGE activated');
+        }
+        
+        function modifyValue(searchValue, replaceValue, addressEndsWith, addressEndsWith2, alertMessage) {
+            h5gg.clearResults(); 
+            h5gg.searchNumber(searchValue, 'I32', '0x100000000', '0x160000000'); 
+            const results = h5gg.getResults(h5gg.getResultsCount()); 
+            let modifiedCount = 0; 
+            results.forEach(result => {
+                if (result.address.endsWith(addressEndsWith) || result.address.endsWith(addressEndsWith2)) {
+                    h5gg.setValue(result.address, replaceValue.toString(), 'I32'); 
+                    modifiedCount++;
+                }
+            }); 
+            if (modifiedCount > 0 && alertMessage) {
+                showNotification(alertMessage);
+            }
+        }
+        
+        function showNotification(message) {
+            // Create notification element
+            const notification = document.createElement('div');
+            notification.style.position = 'fixed';
+            notification.style.bottom = '20px';
+            notification.style.left = '50%';
+            notification.style.transform = 'translateX(-50%)';
+            notification.style.backgroundColor = 'rgba(0, 0, 0, 0.8)';
+            notification.style.color = '#00ffff';
+            notification.style.padding = '10px 20px';
+            notification.style.borderRadius = '20px';
+            notification.style.border = '1px solid #00ffff';
+            notification.style.boxShadow = '0 0 10px #00ffff';
+            notification.style.zIndex = '1000';
+            notification.style.textAlign = 'center';
+            notification.style.animation = 'fadeIn 0.5s';
+            notification.textContent = message;
+            
+            document.body.appendChild(notification);
+            
+            // Remove after 3 seconds
+            setTimeout(() => {
+                notification.style.animation = 'fadeOut 0.5s';
+                setTimeout(() => {
+                    document.body.removeChild(notification);
+                }, 500);
+            }, 3000);
+        }
+    </script>
+    
+    <!-- Particles.js -->
+    <script src="https://cdn.jsdelivr.net/particles.js/2.0.0/particles.min.js"></script>
+    <script>
+        particlesJS('particles-js', {
+            "particles": {
+                "number": {
+                    "value": 80,
+                    "density": {
+                        "enable": true,
+                        "value_area": 800
+                    }
+                },
+                "color": {
+                    "value": "#00ffff"
+                },
+                "shape": {
+                    "type": "circle",
+                    "stroke": {
+                        "width": 0,
+                        "color": "#000000"
+                    },
+                    "polygon": {
+                        "nb_sides": 5
+                    }
+                },
+                "opacity": {
+                    "value": 0.5,
+                    "random": false,
+                    "anim": {
+                        "enable": false,
+                        "speed": 1,
+                        "opacity_min": 0.1,
+                        "sync": false
+                    }
+                },
+                "size": {
+                    "value": 3,
+                    "random": true,
+                    "anim": {
+                        "enable": false,
+                        "speed": 40,
+                        "size_min": 0.1,
+                        "sync": false
+                    }
+                },
+                "line_linked": {
+                    "enable": true,
+                    "distance": 150,
+                    "color": "#00ffff",
+                    "opacity": 0.2,
+                    "width": 1
+                },
+                "move": {
+                    "enable": true,
+                    "speed": 3,
+                    "direction": "none",
+                    "random": false,
+                    "straight": false,
+                    "out_mode": "out",
+                    "bounce": false,
+                    "attract": {
+                        "enable": false,
+                        "rotateX": 600,
+                        "rotateY": 1200
+                    }
+                }
+            },
+            "interactivity": {
+                "detect_on": "canvas",
+                "events": {
+                    "onhover": {
+                        "enable": true,
+                        "mode": "repulse"
+                    },
+                    "onclick": {
+                        "enable": true,
+                        "mode": "push"
+                    },
+                    "resize": true
+                },
+                "modes": {
+                    "grab": {
+                        "distance": 400,
+                        "line_linked": {
+                            "opacity": 1
+                        }
+                    },
+                    "bubble": {
+                        "distance": 400,
+                        "size": 40,
+                        "duration": 2,
+                        "opacity": 8,
+                        "speed": 3
+                    },
+                    "repulse": {
+                        "distance": 100
+                    },
+                    "push": {
+                        "particles_nb": 4
+                    },
+                    "remove": {
+                        "particles_nb": 2
+                    }
+                }
+            },
+            "retina_detect": true
+        });
+    </script>
+    
+    <style>
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateX(-50%) translateY(20px); }
+            to { opacity: 1; transform: translateX(-50%) translateY(0); }
+        }
+        
+        @keyframes fadeOut {
+            from { opacity: 1; transform: translateX(-50%) translateY(0); }
+            to { opacity: 0; transform: translateX(-50%) translateY(20px); }
+        }
+    </style>
+</body>
+</html>
